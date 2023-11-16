@@ -26,7 +26,13 @@
 
 1. Clone the repository.
 2. Install dependencies using `yarn`.
-3. Configure your SQL database.
+3. Configure your MySQL database.
+
+### Configuration
+
+Before running the application, you need to set up the environment variables:
+- Copy the `.env.example` file and rename it to `.env`.
+- Replace the default values of variables with your specific settings.
 
 ### Running the app
 
