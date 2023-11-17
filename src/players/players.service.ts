@@ -10,7 +10,15 @@ export class PlayersService {
     private readonly playerRepository: Repository<Player>,
   ) {}
 
-  findAll() {
+  players() {
     return this.playerRepository.find();
+  }
+
+  playerTeam(playerId: number) {
+    return `This action returns a #${playerId} team`;
+  }
+
+  playerMatchesWithTeam(playerId: number) {
+    return `This action returns a #${playerId} matches with team`;
   }
 }

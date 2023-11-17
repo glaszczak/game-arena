@@ -29,6 +29,8 @@ scalar DateTime
 
 type Query {
   players: [Player!]!
+  playerTeam(playerId: Int!): [Team!]!
+  playerMatchesWithTeam(playerId: Int!): [Match!]!
   teams: [Team!]!
   teamPlayers(teamId: Int!): [Player!]!
   matches: [Match!]!
