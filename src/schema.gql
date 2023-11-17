@@ -10,6 +10,13 @@ type Player {
   teamId: String!
 }
 
+type Team {
+  id: ID!
+  name: String!
+}
+
 type Query {
   players: [Player!]!
+  teams: [Team!]!
+  teamPlayers(teamId: Int!): [Player!]!
 }

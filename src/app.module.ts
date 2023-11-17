@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
+import { TeamsModule } from './teams/teams.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { join } from 'path';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
     PlayersModule,
+    TeamsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
