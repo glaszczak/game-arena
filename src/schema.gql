@@ -15,8 +15,22 @@ type Team {
   name: String!
 }
 
+type Match {
+  id: ID!
+  location: String!
+  date: DateTime!
+  time: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Query {
   players: [Player!]!
   teams: [Team!]!
   teamPlayers(teamId: Int!): [Player!]!
+  matches: [Match!]!
+  matchTeamsAndPlayers(matchId: Int!): Match!
 }

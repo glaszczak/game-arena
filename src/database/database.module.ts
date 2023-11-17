@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Player } from 'src/players/entities/player.entity';
 import { Team } from './../teams/entities/team.entity';
+import { Match } from 'src/matches/entities/match.entity';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { Team } from './../teams/entities/team.entity';
           username: configService.getOrThrow('DB_USERNAME'),
           password: configService.getOrThrow('DB_PASSWORD'),
           database: configService.getOrThrow('DB_DATABASE_NAME'),
-          entities: [Player, Team],
+          entities: [Player, Team, Match],
           synchronize: configService.getOrThrow('DB_SYNCHRONIZE'),
         };
       },

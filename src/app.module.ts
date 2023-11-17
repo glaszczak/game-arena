@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TeamsModule } from './teams/teams.module';
+import { MatchesModule } from './matches/matches.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TeamsModule } from './teams/teams.module';
     }),
     PlayersModule,
     TeamsModule,
+    MatchesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
