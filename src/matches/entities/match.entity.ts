@@ -1,13 +1,10 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { AbstractEntity } from 'src/database/entities/abstract.entity';
 
 @ObjectType('Match')
 @Entity({ name: 'Match' })
-export class Match {
-  @Field(() => ID)
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Match extends AbstractEntity<Match> {
   @Field()
   @Column()
   location: string;

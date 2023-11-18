@@ -1,13 +1,10 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { AbstractEntity } from 'src/database/entities/abstract.entity';
 
 @ObjectType('Team')
 @Entity({ name: 'Team' })
-export class Team {
-  @Field(() => ID)
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Team extends AbstractEntity<Team> {
   @Field()
   @Column()
   name: string;
