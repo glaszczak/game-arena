@@ -13,7 +13,9 @@ export class TeamsResolver {
   }
 
   @Query(() => [Player], { name: 'teamPlayers' })
-  teamPlayers(@Args('teamId', { type: () => Int }) teamId: number) {
+  async teamPlayers(
+    @Args('teamId', { type: () => Int }) teamId: number,
+  ): Promise<Player[]> {
     return this.teamsService.teamPlayers(teamId);
   }
 }

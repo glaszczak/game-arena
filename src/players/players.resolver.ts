@@ -13,8 +13,10 @@ export class PlayersResolver {
     return this.playersService.players();
   }
 
-  @Query(() => [Team], { name: 'playerTeam' })
-  playerTeam(@Args('playerId', { type: () => Int }) playerId: number) {
+  @Query(() => Team, { name: 'playerTeam' })
+  async playerTeam(
+    @Args('playerId', { type: () => Int }) playerId: number,
+  ): Promise<Team> {
     return this.playersService.playerTeam(playerId);
   }
 
