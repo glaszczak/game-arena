@@ -13,8 +13,4 @@ export class MatchesService {
   matches() {
     return this.matchRepository.find();
   }
-
-  matchTeamsWithPlayers(matchId: number) {
-    return `This action returns a #${matchId} match`;
-  }
 }

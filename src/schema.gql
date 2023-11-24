@@ -36,10 +36,10 @@ type Player {
 
 type Query {
   players: [Player!]!
-  playerTeam(playerId: Int!): Team!
-  playerMatchesWithTeam(playerId: Int!): [Match!]!
+  teamPerPlayer(playerId: Int!): Team!
+  matchesPerPlayer(playerId: Int!): [Match!]!
   teams: [Team!]!
-  teamPlayers(teamId: Int!): [Player!]!
+  playersPerTeam(teamId: Int!): [Player!]!
   matches: [Match!]!
-  matchTeamsAndPlayers(matchId: Int!): Match!
+  teamsWithPlayersPerMatch(matchId: Int!): [Team!]!
 }

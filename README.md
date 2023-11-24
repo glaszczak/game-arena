@@ -86,3 +86,92 @@ Team to Match (Many-to-Many)
 ### Entity Relationship Diagram
 
 ![ERD](ERD.jpg)
+
+## Testing
+
+
+### Get a list of all matches
+```graphql
+query {
+  matches {
+    id
+    location
+    date
+    time
+  }
+}
+```
+
+### Get a list of all players
+```graphql
+query {
+  players {
+    id
+    firstName
+    lastName
+    number
+  }
+}
+```
+
+### Get a list of all teams
+```graphql
+query {
+  teams {
+    id
+    name
+  }
+}
+```
+
+### Get a list of players for a specific team
+```graphql
+query {
+  playersPerTeam(teamId: 1) {
+    id
+    firstName
+    lastName
+    number
+  }
+}
+```
+
+### Get the team associated with a specific player.
+```graphql
+query {
+  teamPerPlayer(playerId: 1) {
+    name
+  }
+}
+```
+
+### Get teams and their players for a specific match.
+```graphql
+query {
+  teamsWithPlayersPerMatch(matchId: 1) {
+    name
+    players {
+      id
+    }
+  }
+}
+```
+
+### Get match history for a specific player, including the teams they played for.
+```graphql
+query
+{
+  matchesPerPlayer(playerId: 1) {
+    id
+    location
+    date
+    time
+    players {
+      id
+      team {
+        name
+      }
+    }
+  }
+}
+```
