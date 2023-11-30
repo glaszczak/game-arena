@@ -7,9 +7,10 @@ import {
   Parent,
 } from '@nestjs/graphql';
 import { TeamsService } from './teams.service';
-import { Team } from './entities/team.entity';
+import { Team, TeamConnection } from './entities/team.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { PlayersForTeamLoader } from 'src/database/data-loaders/team/players-for-team.loader';
+import { QueryOrderEnum } from 'src/common/enums/query-order.enum';
 
 @Resolver(() => Team)
 export class TeamsResolver {
@@ -18,9 +19,19 @@ export class TeamsResolver {
     private readonly playersForTeamLoader: PlayersForTeamLoader,
   ) {}
 
-  @Query(() => [Team], { name: 'teams' })
-  teams() {
-    return this.teamsService.teams();
+  @Query(() => TeamConnection, { name: 'teams' })
+  async teams(
+    @Args('first', { type: () => Int, nullable: true }) first?: number,
+    @Args('last', { type: () => Int, nullable: true }) last?: number,
+    @Args('after', { type: () => Int, nullable: true }) after?: number,
+    @Args('before', { type: () => Int, nullable: true }) before?: number,
+    @Args('order', {
+      type: () => QueryOrderEnum,
+      nullable: true,
+    })
+    order?: QueryOrderEnum,
+  ) {
+    return this.teamsService.teams(first, last, after, before, order);
   }
 
   @Query(() => [Player], { name: 'playersPerTeam' })
