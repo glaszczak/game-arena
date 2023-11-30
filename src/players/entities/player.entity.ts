@@ -7,9 +7,14 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { AbstractEntity } from 'src/database/entities/abstract.entity';
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Team } from 'src/teams/entities/team.entity';
 import { Match } from 'src/matches/entities/match.entity';
+import {
+  IEdge,
+  IRelayPaginated,
+} from 'src/common/interfaces/paginated.interface';
+import { PageInfoType } from 'src/common/gql-types/relay-paginated.type';
 
 @ObjectType('Player')
 @Entity({ name: 'Player' })
@@ -35,4 +40,28 @@ export class Player extends AbstractEntity<Player> {
   @ManyToMany(() => Match, (match) => match.players)
   @Field(() => [Match], { nullable: true })
   matches: Match[];
+}
+
+@ObjectType()
+class PlayerEdge implements IEdge<Player> {
+  @Field(() => String)
+  cursor: string;
+
+  @Field(() => Player)
+  node: Player;
+}
+
+@ObjectType()
+export class PlayerConnection implements IRelayPaginated<Player> {
+  @Field(() => [PlayerEdge])
+  edges: PlayerEdge[];
+
+  @Field(() => PageInfoType)
+  pageInfo: PageInfoType;
+
+  @Field(() => Int)
+  previousCount: number;
+
+  @Field(() => Int)
+  currentCount: number;
 }

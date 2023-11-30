@@ -7,11 +7,12 @@ import {
   Parent,
 } from '@nestjs/graphql';
 import { PlayersService } from './players.service';
-import { Player } from './entities/player.entity';
+import { Player, PlayerConnection } from './entities/player.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import { Match } from 'src/matches/entities/match.entity';
 import { MatchesForPlayerLoader } from 'src/database/data-loaders/player/matches-for-player.loader';
 import { TeamForPlayerLoader } from 'src/database/data-loaders/player/team-for-player.loader';
+import { QueryOrderEnum } from 'src/common/enums/query-order.enum';
 
 @Resolver(() => Player)
 export class PlayersResolver {
@@ -21,9 +22,19 @@ export class PlayersResolver {
     private readonly teamForPlayerLoader: TeamForPlayerLoader,
   ) {}
 
-  @Query(() => [Player], { name: 'players' })
-  async players(): Promise<Player[]> {
-    return this.playersService.players();
+  @Query(() => PlayerConnection, { name: 'players' })
+  async players(
+    @Args('first', { type: () => Int, nullable: true }) first?: number,
+    @Args('last', { type: () => Int, nullable: true }) last?: number,
+    @Args('after', { type: () => String, nullable: true }) after?: string,
+    @Args('before', { type: () => String, nullable: true }) before?: string,
+    @Args('order', {
+      type: () => QueryOrderEnum,
+      nullable: true,
+    })
+    order?: QueryOrderEnum,
+  ): Promise<PlayerConnection> {
+    return this.playersService.players(first, last, after, before, order);
   }
 
   @Query(() => Team, { name: 'teamPerPlayer' })

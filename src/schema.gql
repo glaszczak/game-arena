@@ -24,6 +24,13 @@ type Match {
   teams: [Team!]!
 }
 
+type RelayPageInfo {
+  startCursor: String!
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
 type Player {
   id: ID!
   createdAt: DateTime!
@@ -34,12 +41,29 @@ type Player {
   matches: [Match!]
 }
 
+type PlayerEdge {
+  cursor: String!
+  node: Player!
+}
+
+type PlayerConnection {
+  edges: [PlayerEdge!]!
+  pageInfo: RelayPageInfo!
+  previousCount: Int!
+  currentCount: Int!
+}
+
 type Query {
-  players: [Player!]!
+  players(first: Int, last: Int, after: String, before: String, order: QueryOrder): PlayerConnection!
   teamPerPlayer(playerId: Int!): Team!
   matchesPerPlayer(playerId: Int!): [Match!]!
   teams: [Team!]!
   playersPerTeam(teamId: Int!): [Player!]!
   matches: [Match!]!
   teamsWithPlayersPerMatch(matchId: Int!): [Team!]!
+}
+
+enum QueryOrder {
+  ASC
+  DESC
 }
