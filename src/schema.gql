@@ -43,6 +43,18 @@ type Match {
   teams: [Team!]!
 }
 
+type MatchEdge {
+  cursor: String!
+  node: Match!
+}
+
+type MatchConnection {
+  edges: [MatchEdge!]!
+  pageInfo: RelayPageInfo!
+  previousCount: Int!
+  currentCount: Int!
+}
+
 type Player {
   id: ID!
   createdAt: DateTime!
@@ -71,7 +83,7 @@ type Query {
   matchesPerPlayer(playerId: Int!): [Match!]!
   teams(first: Int, last: Int, after: Int, before: Int, order: QueryOrder): TeamConnection!
   playersPerTeam(teamId: Int!): [Player!]!
-  matches: [Match!]!
+  matches(first: Int, last: Int, after: Int, before: Int, order: QueryOrder): MatchConnection!
   teamsWithPlayersPerMatch(matchId: Int!): [Team!]!
 }
 
