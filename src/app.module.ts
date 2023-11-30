@@ -9,6 +9,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TeamsModule } from './teams/teams.module';
 import { MatchesModule } from './matches/matches.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MatchesModule } from './matches/matches.module';
     PlayersModule,
     TeamsModule,
     MatchesModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
