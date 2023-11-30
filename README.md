@@ -89,42 +89,81 @@ Team to Match (Many-to-Many)
 
 ## Testing
 
+### Paginated Queries
 
-### Get a list of all matches
+Our GraphQL API now supports pagination in queries for `matches`, `players`, and `teams`. 
+Use parameters like `first`, `last`, `before`, `after`, and `order` to efficiently access specific data segments. Responses follow a paginated structure, featuring an `edges` array with `node` elements (individual items) and pagination cursors. 
+The `pageInfo` object in responses provides navigational details like `startCursor` (first item's cursor), `endCursor` (last item's cursor), `hasNextPage` (existence of items beyond the set limit), and `hasPreviousPage` (existence of items before the current starting point), enhancing data management in large datasets.
+
+Example:
 ```graphql
 query {
-  matches {
-    id
-    location
-    date
-    time
+  players(first: 10, after: 10, order: ASC) {
+    edges {
+      node {
+        id
+      }
+      cursor
+    }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
   }
 }
 ```
 
-### Get a list of all players
+### Available Queries (examples)
+
+#### Get a paginated list of matches
 ```graphql
 query {
-  players {
-    id
-    firstName
-    lastName
-    number
+  matches(first: 5, order: ASC) {
+    edges {
+      node {
+        id
+        location
+        date
+        time
+      }
+    }
   }
 }
 ```
 
-### Get a list of all teams
+#### Get a paginated list of players
 ```graphql
 query {
-  teams {
-    id
-    name
+  players(last: 5, before: 10, order: DESC) {
+    edges {
+      node {
+        id
+        firstName
+        lastName
+        number
+      }
+    }
   }
 }
 ```
 
-### Get a list of players for a specific team
+#### Get a paginated list of teams
+```graphql
+query {
+  teams(first: 10, after: 5, order: ASC) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+```
+
+#### Get a list of players for a specific team
 ```graphql
 query {
   playersPerTeam(teamId: 1) {
@@ -136,7 +175,7 @@ query {
 }
 ```
 
-### Get the team associated with a specific player.
+#### Get the team associated with a specific player.
 ```graphql
 query {
   teamPerPlayer(playerId: 1) {
@@ -145,7 +184,7 @@ query {
 }
 ```
 
-### Get teams and their players for a specific match.
+#### Get teams and their players for a specific match.
 ```graphql
 query {
   teamsWithPlayersPerMatch(matchId: 1) {
@@ -157,10 +196,9 @@ query {
 }
 ```
 
-### Get match history for a specific player, including the teams they played for.
+#### Get match history for a specific player, including the teams they played for.
 ```graphql
-query
-{
+query {
   matchesPerPlayer(playerId: 1) {
     id
     location
