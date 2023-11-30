@@ -38,21 +38,32 @@ export class CommonService {
     return Buffer.from(str, 'utf-8').toString('base64');
   }
 
-  public decodeCursor(cursor: string, isNum = false): string | number {
-    const str = Buffer.from(cursor, 'base64').toString('utf-8');
-
+  public decodeCursor(cursor: string | number, isNum = true): string | number {
     if (isNum) {
-      const num = parseInt(str, 10);
-
-      if (isNaN(num))
+      if (typeof cursor === 'number') {
+        return cursor;
+      } else {
         throw new BadRequestException(
-          'Cursor does not reference a valid number',
+          'Expected numeric cursor, but got a non-numeric value',
         );
-
-      return num;
+      }
+    } else {
+      if (typeof cursor === 'string') {
+        // Validate base64 string
+        if (
+          !/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+            cursor,
+          )
+        ) {
+          throw new BadRequestException('Cursor is not a valid base64 string');
+        }
+        return Buffer.from(cursor, 'base64').toString('utf-8');
+      } else {
+        throw new BadRequestException(
+          'Expected string cursor, but got a non-string value',
+        );
+      }
     }
-
-    return str;
   }
 
   private static createEdge<T>(
@@ -89,7 +100,7 @@ export class CommonService {
     };
     const len = instances.length;
 
-    if (len > 0) {
+    if (len > 0 && len <= totalCount) {
       for (let i = 0; i < len; i++) {
         pages.edges.push(
           CommonService.createEdge(instances[i], cursor, innerCursor),
@@ -239,60 +250,81 @@ export class CommonService {
   public async relayQueryBuilderPagination<T>(
     repository: Repository<T>,
     cursor: keyof T,
-    first: number,
-    order: QueryOrderEnum,
-    after?: string,
-    before?: string,
-    afterIsNum = false,
-    beforeIsNum = false,
-    innerCursor?: string,
+    first?: number,
+    last?: number,
+    order: QueryOrderEnum = QueryOrderEnum.ASC,
+    after?: number,
+    before?: number,
+    afterIsNum = true,
+    beforeIsNum = true,
   ): Promise<IRelayPaginated<T>> {
     const qb = repository.createQueryBuilder('entity');
 
-    let prevCount = 0;
-    let nextCount = 0;
-
     if (after) {
       const decoded = this.decodeCursor(after, afterIsNum);
-      const filters = CommonService.getFilters(
-        cursor,
-        decoded,
-        getQueryOrder(order),
-        innerCursor,
-      );
-      qb.where(filters);
+      const condition =
+        order === QueryOrderEnum.ASC
+          ? MoreThan(decoded)
+          : MoreThanOrEqual(decoded);
+      qb.andWhere({ [cursor]: condition });
     }
 
     if (before) {
       const decoded = this.decodeCursor(before, beforeIsNum);
-      const oppositeOrder = order === QueryOrderEnum.ASC ? 'DESC' : 'ASC';
-      const convertedOrder = this.convertToOrderEnum(oppositeOrder, true);
-      const filters = CommonService.getFilters(
-        cursor,
-        decoded,
-        convertedOrder,
-        innerCursor,
-      );
-      const countQb = qb.clone().where(filters);
-      prevCount = await countQb.getCount();
+      const condition =
+        order === QueryOrderEnum.ASC
+          ? LessThan(decoded)
+          : LessThanOrEqual(decoded);
+      qb.andWhere({ [cursor]: condition });
     }
 
     qb.orderBy(
       `entity.${String(cursor)}`,
       order === QueryOrderEnum.ASC ? 'ASC' : 'DESC',
-    ).take(first);
+    );
+
+    if (first !== undefined) {
+      qb.take(first + 1);
+    }
+
+    if (last) {
+      qb.orderBy(
+        `entity.${String(cursor)}`,
+        order === QueryOrderEnum.ASC ? 'DESC' : 'ASC',
+      );
+      qb.take(last + 1);
+    }
 
     const entities = await qb.getMany();
 
-    if (after) {
-      const nextQb = qb.clone();
-      nextQb.skip(first);
-      nextCount = await nextQb.getCount();
+    if (first && after) {
+      const decoded = this.decodeCursor(after, afterIsNum);
+      const startIndex = entities.findIndex(
+        (entity) => entity[cursor] === decoded,
+      );
+      if (startIndex >= 0) {
+        entities.splice(0, startIndex + 1);
+      }
+    }
+
+    if (last) {
+      entities.reverse();
+    }
+
+    let hasNextPage = false;
+    let hasPreviousPage = false;
+
+    if (first !== undefined && entities.length > first) {
+      hasNextPage = true;
+      entities.pop();
+    }
+
+    if (last !== undefined && entities.length > last) {
+      hasPreviousPage = true;
+      entities.shift();
     }
 
     return {
-      previousCount: prevCount,
-      currentCount: entities.length,
       edges: entities.map((entity) => ({
         node: entity,
         cursor: String(entity[cursor]),
@@ -302,9 +334,11 @@ export class CommonService {
           ? String(entities[entities.length - 1][cursor])
           : null,
         startCursor: entities.length ? String(entities[0][cursor]) : null,
-        hasNextPage: nextCount > 0,
-        hasPreviousPage: prevCount > 0,
+        hasNextPage,
+        hasPreviousPage,
       },
+      previousCount: hasPreviousPage ? 1 : 0,
+      currentCount: entities.length,
     };
   }
 

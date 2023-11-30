@@ -16,8 +16,8 @@ export class PlayersService {
   async players(
     first: number,
     last: number,
-    after?: string,
-    before?: string,
+    after?: number,
+    before?: number,
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<PlayerConnection> {
     return this.commonService.relayQueryBuilderPagination(

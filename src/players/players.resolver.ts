@@ -26,8 +26,8 @@ export class PlayersResolver {
   async players(
     @Args('first', { type: () => Int, nullable: true }) first?: number,
     @Args('last', { type: () => Int, nullable: true }) last?: number,
-    @Args('after', { type: () => String, nullable: true }) after?: string,
-    @Args('before', { type: () => String, nullable: true }) before?: string,
+    @Args('after', { type: () => Int, nullable: true }) after?: number,
+    @Args('before', { type: () => Int, nullable: true }) before?: number,
     @Args('order', {
       type: () => QueryOrderEnum,
       nullable: true,
