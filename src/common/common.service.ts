@@ -341,15 +341,4 @@ export class CommonService {
       currentCount: entities.length,
     };
   }
-
-  private convertToOrderEnum(
-    order: 'ASC' | 'DESC',
-    isOpposite = false,
-  ): tOrderEnum | tOppositeOrder {
-    if (isOpposite) {
-      return order === 'ASC' ? '$lte' : '$gte';
-    } else {
-      return order === 'ASC' ? '$gt' : '$lt';
-    }
-  }
 }
