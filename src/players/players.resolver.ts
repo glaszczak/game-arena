@@ -34,30 +34,79 @@ export class PlayersResolver {
     })
     order?: QueryOrderEnum,
   ): Promise<PlayerConnection> {
-    return this.playersService.players(first, last, after, before, order);
+    try {
+      return await this.playersService.players(
+        first,
+        last,
+        after,
+        before,
+        order,
+      );
+    } catch (error) {
+      console.error('Error in players query:', error);
+
+      throw new Error('Error occurred while retrieving players');
+    }
   }
 
   @Query(() => Team, { name: 'teamPerPlayer' })
   async playerTeam(
     @Args('playerId', { type: () => Int }) playerId: number,
   ): Promise<Team> {
-    return this.teamForPlayerLoader.load(playerId);
+    try {
+      return await this.teamForPlayerLoader.load(playerId);
+    } catch (error) {
+      throw new Error('Error occurred while retrieving the player’s team');
+    }
   }
 
   @Query(() => [Match], { name: 'matchesPerPlayer' })
   async playerMatches(
     @Args('playerId', { type: () => Int }) playerId: number,
   ): Promise<Match[]> {
-    return this.matchesForPlayerLoader.load(playerId);
+    try {
+      return await this.matchesForPlayerLoader.load(playerId);
+    } catch (error) {
+      console.error(
+        `Error fetching matches for player with ID ${playerId}:`,
+        error,
+      );
+
+      throw new Error(
+        `Error occurred while retrieving matches for the player with ID ${playerId}`,
+      );
+    }
   }
 
   @ResolveField('team')
   async team(@Parent() player: Player): Promise<Team> {
-    return this.teamForPlayerLoader.load(player.id);
+    try {
+      return await this.teamForPlayerLoader.load(player.id);
+    } catch (error) {
+      console.error(
+        `Error fetching team for player with ID ${player.id}:`,
+        error,
+      );
+
+      throw new Error(
+        `Error occurred while retrieving team for player with ID ${player.id}`,
+      );
+    }
   }
 
   @ResolveField('matches')
   async matches(@Parent() player: Player): Promise<Match[]> {
-    return this.matchesForPlayerLoader.load(player.id);
+    try {
+      return await this.matchesForPlayerLoader.load(player.id);
+    } catch (error) {
+      console.error(
+        `Error fetching matches for player with ID ${player.id}:`,
+        error,
+      );
+
+      throw new Error(
+        `Error occurred while retrieving matches for player with ID ${player.id}`,
+      );
+    }
   }
 }

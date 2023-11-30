@@ -20,14 +20,19 @@ export class MatchesService {
     before?: number,
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<MatchConnection> {
-    return this.commonService.relayQueryBuilderPagination(
-      this.matchRepository,
-      'id',
-      first,
-      last,
-      order,
-      after,
-      before,
-    );
+    try {
+      return this.commonService.relayQueryBuilderPagination(
+        this.matchRepository,
+        'id',
+        first,
+        last,
+        order,
+        after,
+        before,
+      );
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+      throw new Error('Failed to fetch matches from the database');
+    }
   }
 }

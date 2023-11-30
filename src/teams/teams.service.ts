@@ -20,14 +20,19 @@ export class TeamsService {
     before?: number,
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<TeamConnection> {
-    return this.commonService.relayQueryBuilderPagination(
-      this.teamRepository,
-      'id',
-      first,
-      last,
-      order,
-      after,
-      before,
-    );
+    try {
+      return this.commonService.relayQueryBuilderPagination(
+        this.teamRepository,
+        'id',
+        first,
+        last,
+        order,
+        after,
+        before,
+      );
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      throw new Error('Failed to fetch teams from the database');
+    }
   }
 }

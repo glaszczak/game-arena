@@ -20,14 +20,19 @@ export class PlayersService {
     before?: number,
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<PlayerConnection> {
-    return this.commonService.relayQueryBuilderPagination(
-      this.playerRepository,
-      'id',
-      first,
-      last,
-      order,
-      after,
-      before,
-    );
+    try {
+      return this.commonService.relayQueryBuilderPagination(
+        this.playerRepository,
+        'id',
+        first,
+        last,
+        order,
+        after,
+        before,
+      );
+    } catch (error) {
+      console.error('Error fetching players:', error);
+      throw new Error('Failed to fetch players from the database');
+    }
   }
 }

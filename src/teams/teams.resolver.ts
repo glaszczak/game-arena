@@ -31,18 +31,42 @@ export class TeamsResolver {
     })
     order?: QueryOrderEnum,
   ) {
-    return this.teamsService.teams(first, last, after, before, order);
+    try {
+      return await this.teamsService.teams(first, last, after, before, order);
+    } catch (error) {
+      console.error('Error in teams query:', error);
+
+      throw new Error('Error occurred while retrieving teams');
+    }
   }
 
   @Query(() => [Player], { name: 'playersPerTeam' })
   async teamPlayers(
     @Args('teamId', { type: () => Int }) teamId: number,
   ): Promise<Player[]> {
-    return this.playersForTeamLoader.load(teamId);
+    try {
+      return await this.playersForTeamLoader.load(teamId);
+    } catch (error) {
+      console.error(
+        `Error fetching players for team with ID ${teamId}:`,
+        error,
+      );
+
+      throw new Error('Failed to load players for the team');
+    }
   }
 
   @ResolveField('players')
   async players(@Parent() team: Team): Promise<Player[]> {
-    return this.playersForTeamLoader.load(team.id);
+    try {
+      return await this.playersForTeamLoader.load(team.id);
+    } catch (error) {
+      console.error(
+        `Error fetching players for team with ID ${team.id}:`,
+        error,
+      );
+
+      throw new Error(`Failed to load players for team with ID ${team.id}`);
+    }
   }
 }

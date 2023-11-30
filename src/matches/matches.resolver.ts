@@ -31,18 +31,46 @@ export class MatchesResolver {
     })
     order?: QueryOrderEnum,
   ): Promise<MatchConnection> {
-    return this.matchesService.matches(first, last, after, before, order);
+    try {
+      return await this.matchesService.matches(
+        first,
+        last,
+        after,
+        before,
+        order,
+      );
+    } catch (error) {
+      console.error('Error in matches query:', error);
+
+      throw new Error('Error occurred while retrieving matches');
+    }
   }
 
   @Query(() => [Team], { name: 'teamsWithPlayersPerMatch' })
   async matchWitDetails(
     @Args('matchId', { type: () => Int }) matchId: number,
   ): Promise<Team[]> {
-    return this.teamsWithPlayersForMatchLoader.load(matchId);
+    try {
+      return await this.teamsWithPlayersForMatchLoader.load(matchId);
+    } catch (error) {
+      console.error(
+        `Error fetching teams with players for match with ID ${matchId}:`,
+        error,
+      );
+      throw new Error('Failed to load teams with players for the match');
+    }
   }
 
   @ResolveField('teams', () => [Team])
   async teams(@Parent() match: Match): Promise<Team[]> {
-    return this.teamsWithPlayersForMatchLoader.load(match.id);
+    try {
+      return await this.teamsWithPlayersForMatchLoader.load(match.id);
+    } catch (error) {
+      console.error(
+        `Error fetching teams for match with ID ${match.id}:`,
+        error,
+      );
+      throw new Error(`Failed to load teams for match with ID ${match.id}`);
+    }
   }
 }
