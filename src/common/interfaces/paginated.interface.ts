@@ -1,32 +1,18 @@
-export interface IBase {
-  id: number;
-  slug: string;
-}
-
 export interface IEdge<T> {
   cursor: string;
   node: T;
 }
 
-export interface IBasicPageInfo {
+export interface IPageInfo {
+  startCursor: string;
   endCursor: string;
+  hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
 
-export interface IRelayPageInfo extends IBasicPageInfo {
-  startCursor: string;
-  hasPreviousPage: boolean;
-}
-
-export interface IBasicPaginated<T> {
-  totalCount: number;
-  edges: IEdge<T>[];
-  pageInfo: IBasicPageInfo;
-}
-
-export interface IRelayPaginated<T> {
+export interface IPaginated<T> {
   previousCount: number;
   currentCount: number;
   edges: IEdge<T>[];
-  pageInfo: IRelayPageInfo;
+  pageInfo: IPageInfo;
 }

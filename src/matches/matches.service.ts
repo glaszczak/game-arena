@@ -21,7 +21,7 @@ export class MatchesService {
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<MatchConnection> {
     try {
-      return this.commonService.relayQueryBuilderPagination(
+      return this.commonService.pagination(
         this.matchRepository,
         'id',
         first,

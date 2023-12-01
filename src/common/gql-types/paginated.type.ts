@@ -1,13 +1,10 @@
 import { Type } from '@nestjs/common';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Edge } from './edge.type';
-import {
-  IRelayPageInfo,
-  IRelayPaginated,
-} from '../interfaces/paginated.interface';
+import { IPageInfo, IPaginated } from '../interfaces/paginated.interface';
 
-@ObjectType('RelayPageInfo')
-export abstract class PageInfoType implements IRelayPageInfo {
+@ObjectType('PageInfo')
+export abstract class PageInfoType implements IPageInfo {
   @Field(() => String)
   public startCursor: string;
 
@@ -21,12 +18,12 @@ export abstract class PageInfoType implements IRelayPageInfo {
   public hasPreviousPage: boolean;
 }
 
-export function RelayPaginated<T>(classRef: Type<T>): Type<IRelayPaginated<T>> {
-  @ObjectType(`${classRef.name}RelayEdge`)
+export function Paginated<T>(classRef: Type<T>): Type<IPaginated<T>> {
+  @ObjectType(`${classRef.name}Edge`)
   abstract class EdgeType extends Edge(classRef) {}
 
   @ObjectType({ isAbstract: true })
-  abstract class RelayPaginatedType implements IRelayPaginated<T> {
+  abstract class PaginatedType implements IPaginated<T> {
     @Field(() => Int)
     public previousCount: number;
 
@@ -40,5 +37,5 @@ export function RelayPaginated<T>(classRef: Type<T>): Type<IRelayPaginated<T>> {
     public pageInfo: PageInfoType;
   }
 
-  return RelayPaginatedType as Type<IRelayPaginated<T>>;
+  return PaginatedType as Type<IPaginated<T>>;
 }

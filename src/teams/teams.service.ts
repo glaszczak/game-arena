@@ -21,7 +21,7 @@ export class TeamsService {
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<TeamConnection> {
     try {
-      return this.commonService.relayQueryBuilderPagination(
+      return this.commonService.pagination(
         this.teamRepository,
         'id',
         first,

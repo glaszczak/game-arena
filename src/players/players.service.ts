@@ -21,7 +21,7 @@ export class PlayersService {
     order: QueryOrderEnum = QueryOrderEnum.ASC,
   ): Promise<PlayerConnection> {
     try {
-      return this.commonService.relayQueryBuilderPagination(
+      return this.commonService.pagination(
         this.playerRepository,
         'id',
         first,

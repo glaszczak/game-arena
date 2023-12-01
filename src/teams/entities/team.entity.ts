@@ -2,11 +2,8 @@ import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { AbstractEntity } from 'src/database/entities/abstract.entity';
 import { Player } from 'src/players/entities/player.entity';
-import {
-  IEdge,
-  IRelayPaginated,
-} from 'src/common/interfaces/paginated.interface';
-import { PageInfoType } from 'src/common/gql-types/relay-paginated.type';
+import { IEdge, IPaginated } from 'src/common/interfaces/paginated.interface';
+import { PageInfoType } from 'src/common/gql-types/paginated.type';
 
 @ObjectType('Team')
 @Entity({ name: 'Team' })
@@ -31,7 +28,7 @@ class TeamEdge implements IEdge<Team> {
 }
 
 @ObjectType()
-export class TeamConnection implements IRelayPaginated<Team> {
+export class TeamConnection implements IPaginated<Team> {
   @Field(() => [TeamEdge])
   edges: TeamEdge[];
 

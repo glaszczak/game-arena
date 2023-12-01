@@ -2,11 +2,8 @@ import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { AbstractEntity } from 'src/database/entities/abstract.entity';
 import { Player } from 'src/players/entities/player.entity';
-import {
-  IEdge,
-  IRelayPaginated,
-} from 'src/common/interfaces/paginated.interface';
-import { PageInfoType } from 'src/common/gql-types/relay-paginated.type';
+import { IEdge, IPaginated } from 'src/common/interfaces/paginated.interface';
+import { PageInfoType } from 'src/common/gql-types/paginated.type';
 
 @ObjectType('Match')
 @Entity({ name: 'Match' })
@@ -39,7 +36,7 @@ class MatchEdge implements IEdge<Match> {
 }
 
 @ObjectType()
-export class MatchConnection implements IRelayPaginated<Match> {
+export class MatchConnection implements IPaginated<Match> {
   @Field(() => [MatchEdge])
   edges: MatchEdge[];
 

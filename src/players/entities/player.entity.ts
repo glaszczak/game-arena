@@ -10,11 +10,8 @@ import { AbstractEntity } from 'src/database/entities/abstract.entity';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Team } from 'src/teams/entities/team.entity';
 import { Match } from 'src/matches/entities/match.entity';
-import {
-  IEdge,
-  IRelayPaginated,
-} from 'src/common/interfaces/paginated.interface';
-import { PageInfoType } from 'src/common/gql-types/relay-paginated.type';
+import { IEdge, IPaginated } from 'src/common/interfaces/paginated.interface';
+import { PageInfoType } from 'src/common/gql-types/paginated.type';
 
 @ObjectType('Player')
 @Entity({ name: 'Player' })
@@ -52,7 +49,7 @@ class PlayerEdge implements IEdge<Player> {
 }
 
 @ObjectType()
-export class PlayerConnection implements IRelayPaginated<Player> {
+export class PlayerConnection implements IPaginated<Player> {
   @Field(() => [PlayerEdge])
   edges: PlayerEdge[];
 

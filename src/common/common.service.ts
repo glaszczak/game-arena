@@ -16,11 +16,7 @@ import {
   tOppositeOrder,
   tOrderEnum,
 } from './enums/query-order.enum';
-import {
-  IBasicPaginated,
-  IEdge,
-  IRelayPaginated,
-} from './interfaces/paginated.interface';
+import { IEdge, IPaginated } from './interfaces/paginated.interface';
 
 @Injectable()
 export class CommonService {
@@ -83,88 +79,6 @@ export class CommonService {
     }
   }
 
-  public basicPaginate<T>(
-    instances: T[],
-    totalCount: number,
-    cursor: keyof T,
-    first: number,
-    innerCursor?: string,
-  ): IBasicPaginated<T> {
-    const pages: IBasicPaginated<T> = {
-      totalCount,
-      edges: [],
-      pageInfo: {
-        endCursor: '',
-        hasNextPage: false,
-      },
-    };
-    const len = instances.length;
-
-    if (len > 0 && len <= totalCount) {
-      for (let i = 0; i < len; i++) {
-        pages.edges.push(
-          CommonService.createEdge(instances[i], cursor, innerCursor),
-        );
-      }
-      pages.pageInfo.endCursor = pages.edges[len - 1].cursor;
-      pages.pageInfo.hasNextPage = totalCount > first;
-    }
-
-    return pages;
-  }
-
-  public relayPaginate<T>(
-    instances: T[],
-    currentCount: number,
-    previousCount: number,
-    cursor: keyof T,
-    first: number,
-    innerCursor?: string,
-  ): IRelayPaginated<T> {
-    const pages: IRelayPaginated<T> = {
-      currentCount,
-      previousCount,
-      edges: [],
-      pageInfo: {
-        endCursor: '',
-        startCursor: '',
-        hasPreviousPage: false,
-        hasNextPage: false,
-      },
-    };
-    const len = instances.length;
-
-    if (len > 0) {
-      for (let i = 0; i < len; i++) {
-        pages.edges.push(
-          CommonService.createEdge(instances[i], cursor, innerCursor),
-        );
-      }
-      pages.pageInfo.startCursor = pages.edges[0].cursor;
-      pages.pageInfo.endCursor = pages.edges[len - 1].cursor;
-      pages.pageInfo.hasNextPage = currentCount > first;
-      pages.pageInfo.hasPreviousPage = previousCount > 0;
-    }
-
-    return pages;
-  }
-
-  private static getOrderBy<T>(
-    cursor: keyof T,
-    order: QueryOrderEnum,
-    innerCursor?: string,
-  ): Record<string, QueryOrderEnum | Record<string, QueryOrderEnum>> {
-    return innerCursor
-      ? {
-          [cursor]: {
-            [innerCursor]: order,
-          },
-        }
-      : {
-          [cursor]: order,
-        };
-  }
-
   private static getFilters<T>(
     cursor: keyof T,
     decoded: string | number,
@@ -202,52 +116,27 @@ export class CommonService {
     }
   }
 
-  public async basicQueryBuilderPagination<T>(
+  private async checkNextPageExistence<T>(
     repository: Repository<T>,
     cursor: keyof T,
-    first: number,
+    lastCursor: string,
     order: QueryOrderEnum,
-    after?: string,
-    afterIsNum = false,
-    innerCursor?: string,
-  ): Promise<IBasicPaginated<T>> {
-    const qb = repository.createQueryBuilder('entity');
+  ): Promise<boolean> {
+    const decodedLastCursor = this.decodeCursor(
+      lastCursor,
+      typeof lastCursor === 'number',
+    );
+    const condition = CommonService.getFilters(
+      cursor,
+      decodedLastCursor,
+      getQueryOrder(order),
+    );
 
-    if (after) {
-      const decoded = this.decodeCursor(after, afterIsNum);
-      const qbOrder = getQueryOrder(order);
-      const filters = CommonService.getFilters(
-        cursor,
-        decoded,
-        qbOrder,
-        innerCursor,
-      );
-      qb.where(filters);
-    }
-
-    qb.orderBy(
-      `entity.${String(cursor)}`,
-      order === QueryOrderEnum.ASC ? 'ASC' : 'DESC',
-    ).take(first);
-
-    const [entities, count] = await qb.getManyAndCount();
-
-    return {
-      edges: entities.map((entity) => ({
-        node: entity,
-        cursor: String(entity[cursor]),
-      })),
-      pageInfo: {
-        endCursor: entities.length
-          ? String(entities[entities.length - 1][cursor])
-          : null,
-        hasNextPage: entities.length === first,
-      },
-      totalCount: count,
-    };
+    const count = await repository.count({ where: condition });
+    return count > 0;
   }
 
-  public async relayQueryBuilderPagination<T>(
+  public async pagination<T>(
     repository: Repository<T>,
     cursor: keyof T,
     first?: number,
@@ -257,88 +146,65 @@ export class CommonService {
     before?: number,
     afterIsNum = true,
     beforeIsNum = true,
-  ): Promise<IRelayPaginated<T>> {
+  ): Promise<IPaginated<T>> {
     const qb = repository.createQueryBuilder('entity');
 
-    if (after) {
-      const decoded = this.decodeCursor(after, afterIsNum);
-      const condition =
-        order === QueryOrderEnum.ASC
-          ? MoreThan(decoded)
-          : MoreThanOrEqual(decoded);
-      qb.andWhere({ [cursor]: condition });
-    }
-
-    if (before) {
-      const decoded = this.decodeCursor(before, beforeIsNum);
-      const condition =
-        order === QueryOrderEnum.ASC
-          ? LessThan(decoded)
-          : LessThanOrEqual(decoded);
-      qb.andWhere({ [cursor]: condition });
-    }
-
-    qb.orderBy(
-      `entity.${String(cursor)}`,
-      order === QueryOrderEnum.ASC ? 'ASC' : 'DESC',
+    const decoded = this.decodeCursor(
+      after ?? before,
+      afterIsNum ?? beforeIsNum,
     );
+    qb.andWhere({ [cursor]: after ? MoreThan(decoded) : LessThan(decoded) });
+
+    let entities: T[];
 
     if (first !== undefined) {
-      qb.take(first + 1);
-    }
-
-    if (last) {
       qb.orderBy(
         `entity.${String(cursor)}`,
-        order === QueryOrderEnum.ASC ? 'DESC' : 'ASC',
+        order === QueryOrderEnum.ASC ? 'ASC' : 'DESC',
       );
-      qb.take(last + 1);
-    }
-
-    const entities = await qb.getMany();
-
-    if (first && after) {
-      const decoded = this.decodeCursor(after, afterIsNum);
-      const startIndex = entities.findIndex(
-        (entity) => entity[cursor] === decoded,
+      qb.limit(first);
+      entities = await this.throwInternalError(qb.getMany());
+    } else if (last !== undefined) {
+      const reverseOrder = order === QueryOrderEnum.ASC ? 'DESC' : 'ASC';
+      qb.orderBy(`entity.${String(cursor)}`, reverseOrder);
+      qb.limit(last);
+      const reversedEntities = await this.throwInternalError(qb.getMany());
+      entities = reversedEntities.reverse();
+    } else {
+      qb.orderBy(
+        `entity.${String(cursor)}`,
+        order === QueryOrderEnum.ASC ? 'ASC' : 'DESC',
       );
-      if (startIndex >= 0) {
-        entities.splice(0, startIndex + 1);
-      }
+      entities = await this.throwInternalError(qb.getMany());
     }
 
-    if (last) {
-      entities.reverse();
-    }
+    const edges = entities.map((entity) =>
+      CommonService.createEdge(entity, cursor),
+    );
 
     let hasNextPage = false;
     let hasPreviousPage = false;
 
-    if (first !== undefined && entities.length > first) {
-      hasNextPage = true;
-      entities.pop();
-    }
-
-    if (last !== undefined && entities.length > last) {
-      hasPreviousPage = true;
-      entities.shift();
+    if (edges.length > 0) {
+      hasNextPage = await this.checkNextPageExistence(
+        repository,
+        cursor,
+        edges[edges.length - 1].cursor,
+        order,
+      );
+      hasPreviousPage = after != null;
     }
 
     return {
-      edges: entities.map((entity) => ({
-        node: entity,
-        cursor: String(entity[cursor]),
-      })),
+      edges,
       pageInfo: {
-        endCursor: entities.length
-          ? String(entities[entities.length - 1][cursor])
-          : null,
-        startCursor: entities.length ? String(entities[0][cursor]) : null,
+        startCursor: edges.length > 0 ? edges[0].cursor : null,
+        endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null,
         hasNextPage,
         hasPreviousPage,
       },
       previousCount: hasPreviousPage ? 1 : 0,
-      currentCount: entities.length,
+      currentCount: edges.length,
     };
   }
 }

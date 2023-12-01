@@ -2,7 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type RelayPageInfo {
+type PageInfo {
   startCursor: String!
   endCursor: String!
   hasNextPage: Boolean!
@@ -28,7 +28,7 @@ type TeamEdge {
 
 type TeamConnection {
   edges: [TeamEdge!]!
-  pageInfo: RelayPageInfo!
+  pageInfo: PageInfo!
   previousCount: Int!
   currentCount: Int!
 }
@@ -50,7 +50,7 @@ type MatchEdge {
 
 type MatchConnection {
   edges: [MatchEdge!]!
-  pageInfo: RelayPageInfo!
+  pageInfo: PageInfo!
   previousCount: Int!
   currentCount: Int!
 }
@@ -72,7 +72,7 @@ type PlayerEdge {
 
 type PlayerConnection {
   edges: [PlayerEdge!]!
-  pageInfo: RelayPageInfo!
+  pageInfo: PageInfo!
   previousCount: Int!
   currentCount: Int!
 }
